@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"alwaysStrict": true,
+		"declaration": true,
+		"downlevelIteration": true,
+		"sourceMap": true,
+		"target": "es2017",
+		"module": "commonjs",
+		"rootDir": "./src",
+		"outDir": "./dist"
+	},
+	"include": [
+		"./src/**/*.ts"
+	]
+}
