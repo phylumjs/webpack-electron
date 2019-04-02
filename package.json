@@ -11,10 +11,15 @@
 		"prepack": "npm run test && npm run compile"
 	},
 	"dependencies": {
-		"@types/node": "^10.14.4"
+		"@types/fs-extra": "^5.0.5",
+		"@types/node": "^10.14.4",
+		"@types/ws": "^6.0.1",
+		"fs-extra": "^7.0.1",
+		"ws": "^6.2.1"
 	},
 	"devDependencies": {
-		"@phylum/pipeline": "^4.0.0",
+		"@phylum/cli": "^4.0.0",
+		"@phylum/pipeline": "^4.0.2",
 		"@phylum/webpack": "^4.0.2",
 		"ava": "^1.4.1",
 		"concurrently": "^4.1.0",
@@ -25,7 +30,7 @@
 		"webpack": "^4.29.6"
 	},
 	"peerDependencies": {
-		"@phylum/pipeline": "^4.0.0",
+		"@phylum/pipeline": "^4.0.2",
 		"@phylum/webpack": "^4.0.2"
 	},
 	"author": "Max J. Polster",
