@@ -8,7 +8,7 @@
 		"compile:watch": "rimraf dist && tsc -w",
 		"test": "npm run compile && nyc -- ava -v",
 		"test:watch": "npm run compile && concurrently -n tsc,ava \"tsc -w\" \"ava -w -v\"",
-		"prepack": "npm run test && npm run compile"
+		"prepack": "npm run compile"
 	},
 	"dependencies": {
 		"@types/fs-extra": "^5.0.5",
