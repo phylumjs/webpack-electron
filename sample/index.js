@@ -45,7 +45,7 @@ const bundleRenderer = new WebpackTask(new Task(async t => {
 		context: `${__dirname}/..`,
 		mode: 'production',
 		entry: [
-			...(command.dev ? [require.resolve('../dist/hmr') + '?onreject=reboot'] : []),
+			...(command.dev ? [require.resolve('../dist/hmr')] : []),
 			'./sample/src/renderer'
 		],
 		target: 'electron-renderer',
