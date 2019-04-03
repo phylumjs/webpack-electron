@@ -34,6 +34,7 @@
 		"@phylum/pipeline": "^4.0.2",
 		"@phylum/webpack": "^4.0.2"
 	},
+	"repository": "github:phylumjs/webpack-electron",
 	"author": "Max J. Polster",
 	"license": "MIT"
 }
