@@ -99,3 +99,16 @@ This behaviour can be changed to rebooting the main process instead by using the
 ```ts
 import '@phylum/webpack-electron/dist/hmr?onreject=reboot';
 ```
+
+<br>
+
+# Troubleshooting
+
+#### The main process can not be started
++ The electron uses a file named `index.js` from your main bundles's output directory by default.
++ Make sure, that the webpack option `output.filename` does not contain placeholders like `'[name]'` or `'hash'`.
++ Startup can be customized using `entry`, `cwd` and `args` options.
+
+#### Hot module replacement always reboots the main process or reloads the renderer page
++ Make sure the `HotModuleReplacementPlugin` is included in your webpack config.
++ Make sure that the hmr client is **not** a [webpack external](https://webpack.js.org/configuration/externals/).
