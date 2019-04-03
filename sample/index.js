@@ -7,6 +7,8 @@ const { Task } = require('@phylum/pipeline');
 const { HotModuleReplacementPlugin } = require('webpack');
 const HtmlPlugin = require('html-webpack-plugin');
 const { WebpackTask } = require('@phylum/webpack');
+
+// const { WebpackElectronTask } = require('@phylum/webpack-electron');
 const { WebpackElectronTask } = require('..');
 
 /**
@@ -26,6 +28,7 @@ const bundleMain = new WebpackTask(new Task(async t => {
 		context: `${__dirname}/..`,
 		mode: 'production',
 		entry: [
+			// ...(command.dev ? ['@phylum/webpack-electron/dist/hmr'] : []),
 			...(command.dev ? [require.resolve('../dist/hmr')] : []),
 			'./sample/src/main'
 		],
@@ -54,6 +57,7 @@ const bundleRenderer = new WebpackTask(new Task(async t => {
 		context: `${__dirname}/..`,
 		mode: 'production',
 		entry: [
+			// ...(command.dev ? ['@phylum/webpack-electron/dist/hmr'] : []),
 			...(command.dev ? [require.resolve('../dist/hmr')] : []),
 			'./sample/src/renderer'
 		],

@@ -115,6 +115,10 @@ git clone https://github.com/phylumjs/webpack-electron.git
 # Install dependencies
 npm install
 
+# Compile webpack-electron:
+# (This is needed because the sample uses this package directly)
+npm run compile
+
 # Run the sample in dev mode:
 npx phylum ./sample -d
 
