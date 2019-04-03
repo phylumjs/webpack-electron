@@ -21,9 +21,9 @@ import { WebpackElectronTask } from '@phylum/webpack-electron';
 
 const bundleMain = new WebpackTask(...);
 
-const electron = new ElectronTask({
+const electron = new WebpackElectronTask(Task.value({
 	main: bundleMain
-});
+}));
 
 new Task(async t => {
 	// Run the webpack compiler:
@@ -32,19 +32,20 @@ new Task(async t => {
 	await t.use(electron);
 });
 ```
+*Note that the electron task assumes, that the main bundle has already been compiled.*
 
 # Hot Module Replacement
 
 ## Main Bundle
 ```ts
-new WebpackElectronTask({
+new WebpackElectronTask(Task.value({
 	// Enable hot module replacement:
-	hot: true,
+	mainHmr: true,
 	main: bundleMain
-});
+}));
 ```
 ```ts
-// Import the hmr client somewhere in your code...
+// Import the hmr client somewhere in your main process code...
 import '@phylum/webpack-electron/dist/hmr';
 ```
 ```ts
@@ -59,11 +60,13 @@ plugins: [
 If the hmr runtime is not included or an update is rejected, the main process will be rebooted.
 
 ## Renderer Bundles
-*Renderer hot module replacement requires the hmr client to be included in the main bundle.*
+For renderer hmr support, it is required that the hmr client is also included in the main bundle as it routes update signals to one or more renderer processes.
 ```ts
-new WebpackElectronTask({
-	hot: true,
-	main: bundleMain,
+new WebpackElectronTask(Task.value({
+	...
+
+	// Enable renderer hmr:
+	rendererHmr: true
 
 	// single renderer bundle:
 	renderer: bundleRenderer,
@@ -73,7 +76,7 @@ new WebpackElectronTask({
 		foo: bundleRendererFoo,
 		bar: bundleRendererBar
 	}
-});
+}));
 ```
 ```ts
 // Import the hmr client somewhere in your code...
@@ -82,10 +85,17 @@ import '@phylum/webpack-electron/dist/hmr';
 // and specify the name when using multiple renderer bundles:
 import '@phylum/webpack-electron/dist/hmr?name=foo';
 ```
+```ts
+// ...or add it to your entry point:
+entry: ['@phylum/webpack-electron/dist/hmr?...', './src/renderer.js'],
 
+// Optional. Include the hmr runtime:
+plugins: [
+	new webpack.HotModuleReplacementPlugin()
+]
+```
 When a renderer process rejects an update or the hmr runtime is not included, the renderer page will be reloaded by default.<br>
 This behaviour can be changed to rebooting the main process instead by using the **onreject** query parameter:
 ```ts
 import '@phylum/webpack-electron/dist/hmr?onreject=reboot';
 ```
-

@@ -8,8 +8,9 @@ import { spawn } from 'child_process';
 import { HmrServer } from './hmr-server';
 
 export class WebpackElectronTask extends Task<WebpackElectronResult> {
-	public constructor(options: WebpackElectronOptions) {
+	public constructor(optionsTask: Task<WebpackElectronOptions>) {
 		super(async t => {
+			const options = await t.use(optionsTask);
 			const mainCompiler = await t.use(options.main.getCompiler);
 			const context = mainCompiler.options.context || process.cwd();
 			let proc = spawn(electron, [
@@ -50,7 +51,7 @@ export class WebpackElectronTask extends Task<WebpackElectronResult> {
 				return done;
 			});
 
-			if (options.hot) {
+			if (options.mainHmr) {
 				t.using(options.main.pipe(state => {
 					state.catch(() => {}).then(() => {
 						if (!hmr.send({ name: 'update-main' })) {
@@ -58,7 +59,8 @@ export class WebpackElectronTask extends Task<WebpackElectronResult> {
 						}
 					});
 				}, false));
-
+			}
+			if (options.rendererHmr) {
 				function sendRendererUpdates(name: string, renderer: WebpackTask) {
 					t.using(renderer.pipe(state => {
 						state.then(stats => {
@@ -89,19 +91,19 @@ export class WebpackElectronTask extends Task<WebpackElectronResult> {
 					}
 				}
 			}
-
 			return result;
 		});
-		this.mainWebpackTask = options.main;
+		this.optionsTask = optionsTask;
 	}
 
-	public readonly mainWebpackTask: WebpackTask;
+	public readonly optionsTask: Task<WebpackElectronOptions>;
 }
 
 export interface WebpackElectronOptions {
 	readonly main: WebpackTask;
-	readonly hot?: boolean;
+	readonly mainHmr?: boolean;
 	readonly renderer?: WebpackTask | { [Name in string]: WebpackTask };
+	readonly rendererHmr?: boolean;
 	readonly entry?: string;
 	readonly cwd?: string;
 	readonly args?: string[];

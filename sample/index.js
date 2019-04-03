@@ -85,11 +85,12 @@ function webpackLog(stats) {
 const bundleMainAndLog = bundleMain.transform(webpackLog);
 const bundleRendererAndLog = bundleRenderer.transform(webpackLog);
 
-const electron = new WebpackElectronTask({
-	hot: true,
+const electron = new WebpackElectronTask(Task.value({
+	mainHmr: true,
 	main: bundleMain,
+	rendererHmr: true,
 	renderer: bundleRenderer
-});
+}));
 
 exports.default = new Task(async t => {
 	const { command } = await t.use(config);
