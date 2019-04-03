@@ -102,6 +102,30 @@ import '@phylum/webpack-electron/dist/hmr?onreject=reboot';
 
 <br>
 
+
+
+# Sample
+The code in the `/sample` directory shows how a basic project could look like.
++ Webpack is used for bundling main and renderer process code.
++ Both code bases are watched for changes.
+```bash
+# Clone the repository:
+git clone https://github.com/phylumjs/webpack-electron.git
+
+# Install dependencies
+npm install
+
+# Run the sample in dev mode:
+npx phylum ./sample -d
+
+# Build the sample for production:
+npx phylum ./sample
+```
+
+<br>
+
+
+
 # Troubleshooting
 
 #### The main process can not be started

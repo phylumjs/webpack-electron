@@ -9,10 +9,16 @@ const HtmlPlugin = require('html-webpack-plugin');
 const { WebpackTask } = require('@phylum/webpack');
 const { WebpackElectronTask } = require('..');
 
+/**
+ * This task is used for cleaning up the output directory:
+ */
 const clean = new Task(async () => {
 	await remove(`${__dirname}/dist`);
 });
 
+/**
+ * Webpack task that bundles main process code.
+ */
 const bundleMain = new WebpackTask(new Task(async t => {
 	const { command } = await t.use(config);
 	return {
@@ -38,6 +44,9 @@ const bundleMain = new WebpackTask(new Task(async t => {
 	};
 }));
 
+/**
+ * Webpack task that bundles renderer process code.
+ */
 const bundleRenderer = new WebpackTask(new Task(async t => {
 	const { command } = await t.use(config);
 	return {
@@ -69,7 +78,13 @@ const bundleRenderer = new WebpackTask(new Task(async t => {
 	}
 }));
 
-function webpackLog(stats) {
+/**
+ * The following tasks add minimal logging when a compilation completes:
+ */
+const bundleMainAndLog = bundleMain.transform(log);
+const bundleRendererAndLog = bundleRenderer.transform(log);
+
+function log(stats) {
 	const data = stats.toJson();
 	for (const msg of data.errors) {
 		console.error(msg);
@@ -82,9 +97,9 @@ function webpackLog(stats) {
 	}
 }
 
-const bundleMainAndLog = bundleMain.transform(webpackLog);
-const bundleRendererAndLog = bundleRenderer.transform(webpackLog);
-
+/**
+ * The electron task.
+ */
 const electron = new WebpackElectronTask(Task.value({
 	mainHmr: true,
 	main: bundleMain,
@@ -92,6 +107,9 @@ const electron = new WebpackElectronTask(Task.value({
 	renderer: bundleRenderer
 }));
 
+/**
+ * The main task that will be executed by the phylum cli:
+ */
 exports.default = new Task(async t => {
 	const { command } = await t.use(config);
 	await t.use(clean);
@@ -99,11 +117,15 @@ exports.default = new Task(async t => {
 		t.use(bundleMainAndLog),
 		t.use(bundleRendererAndLog)
 	]);
+	// Only start the electron app when running in dev mode:
 	if (command.dev) {
 		await t.use(electron);
 	}
 });
 
+/**
+ * Add a '--dev | -d' flag to be parsed by the phylum cli:
+ */
 exports.args = [
 	{name: 'dev', alias: 'd', type: 'flag', defaultValue: false}
 ];
