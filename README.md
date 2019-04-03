@@ -17,6 +17,7 @@ The webpack electron task runs an electron main process from bundled sources.
 ```ts
 import { Task } from '@phylum/pipeline';
 import { WebpackTask } from '@phylum/webpack';
+import { WebpackElectronTask } from '@phylum/webpack-electron';
 
 const bundleMain = new WebpackTask(...);
 
@@ -36,7 +37,7 @@ new Task(async t => {
 
 ## Main Bundle
 ```ts
-new ElectronTask({
+new WebpackElectronTask({
 	// Enable hot module replacement:
 	hot: true,
 	main: bundleMain
@@ -60,7 +61,7 @@ If the hmr runtime is not included or an update is rejected, the main process wi
 ## Renderer Bundles
 *Renderer hot module replacement requires the hmr client to be included in the main bundle.*
 ```ts
-new ElectronTask({
+new WebpackElectronTask({
 	hot: true,
 	main: bundleMain,
 
