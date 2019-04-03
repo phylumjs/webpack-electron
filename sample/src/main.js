@@ -1,5 +1,13 @@
 
-import { app } from 'electron';
-import '../../dist/hmr';
+import { app, BrowserWindow } from 'electron';
 
-console.log('Electron app is alive!');
+let win;
+
+app.on('ready', () => {
+	win = new BrowserWindow();
+	win.loadFile(`${__dirname}/renderer/index.html`);
+});
+
+app.on('window-all-closed', () => {
+	app.quit();
+});

@@ -1,11 +1,11 @@
 
+import { inspect } from 'util';
 import { Task } from '@phylum/pipeline';
 import { WebpackTask } from '@phylum/webpack';
 import electron = require('electron/index');
 import { resolve } from 'path';
 import { spawn } from 'child_process';
 import { HmrServer } from './hmr-server';
-import { inspect } from 'util';
 
 export class WebpackElectronTask extends Task<WebpackElectronResult> {
 	public constructor(options: WebpackElectronOptions) {
@@ -50,13 +50,46 @@ export class WebpackElectronTask extends Task<WebpackElectronResult> {
 				return done;
 			});
 
-			t.using(options.main.pipe(state => {
-				state.catch(() => {}).then(stats => {
-					if (!hmr.send({ name: 'update-main' })) {
-						t.reset();
+			if (options.hot) {
+				t.using(options.main.pipe(state => {
+					state.catch(() => {}).then(() => {
+						if (!hmr.send({ name: 'update-main' })) {
+							t.reset();
+						}
+					});
+				}, false));
+
+				function sendRendererUpdates(name: string, renderer: WebpackTask) {
+					t.using(renderer.pipe(state => {
+						state.then(stats => {
+							if (!hmr.send({
+								name: 'update-renderer',
+								renderer: name,
+								stats: stats.toJson({ all: false, errors: true, warnings: true })
+							})) {
+								t.reset();
+							}
+						}).catch(error => {
+							if (!hmr.send({
+								name: 'update-renderer',
+								renderer: name,
+								error: error.stack || inspect(error)
+							})) {
+								t.reset();
+							}
+						});
+					}, false));
+				}
+
+				if (options.renderer instanceof WebpackTask) {
+					sendRendererUpdates('default', options.renderer);
+				} else if (options.renderer) {
+					for (const name in options.renderer) {
+						sendRendererUpdates(name, options.renderer[name]);
 					}
-				});
-			}, false));
+				}
+			}
+
 			return result;
 		});
 		this.mainWebpackTask = options.main;
@@ -67,6 +100,8 @@ export class WebpackElectronTask extends Task<WebpackElectronResult> {
 
 export interface WebpackElectronOptions {
 	readonly main: WebpackTask;
+	readonly hot?: boolean;
+	readonly renderer?: WebpackTask | { [Name in string]: WebpackTask };
 	readonly entry?: string;
 	readonly cwd?: string;
 	readonly args?: string[];
