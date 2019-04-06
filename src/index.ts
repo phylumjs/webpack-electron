@@ -2,10 +2,13 @@
 import { inspect } from 'util';
 import { Task } from '@phylum/pipeline';
 import { WebpackTask } from '@phylum/webpack';
-import electron = require('electron/index');
 import { resolve } from 'path';
-import { spawn } from 'child_process';
+import { spawn, StdioOptions } from 'child_process';
 import { HmrServer } from './hmr-server';
+
+async function resolveExecutable(): Promise<string> {
+	return import('electron/index');
+}
 
 export class WebpackElectronTask extends Task<WebpackElectronResult> {
 	public constructor(optionsTask: Task<WebpackElectronOptions>) {
@@ -13,13 +16,15 @@ export class WebpackElectronTask extends Task<WebpackElectronResult> {
 			const options = await t.use(optionsTask);
 			const mainCompiler = await t.use(options.main.getCompiler);
 			const context = mainCompiler.options.context || process.cwd();
-			let proc = spawn(electron, [
+			let proc = spawn(options.executable || await resolveExecutable(), [
 				options.entry ? resolve(context, options.entry) : mainCompiler.options.output.path,
 				...(options.args || [])
 			], {
 				cwd: options.cwd || context,
 				shell: false,
-				stdio: [0, 1, 2]
+				stdio: options.stdio || [0, 1, 2],
+				uid: options.uid,
+				gid: options.gid
 			});
 
 			const hmr = await HmrServer.create(proc.pid);
@@ -104,9 +109,13 @@ export interface WebpackElectronOptions {
 	readonly mainHmr?: boolean;
 	readonly renderer?: WebpackTask | { [Name in string]: WebpackTask };
 	readonly rendererHmr?: boolean;
+	readonly executable?: string;
 	readonly entry?: string;
 	readonly cwd?: string;
 	readonly args?: string[];
+	readonly stdio?: StdioOptions;
+	readonly uid?: number;
+	readonly gid?: number;
 }
 
 export interface WebpackElectronResult {
